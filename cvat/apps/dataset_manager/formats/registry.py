@@ -1,5 +1,5 @@
 
-# Copyright (C) 2020 Intel Corporation
+# Copyright (C) 2020-2021 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 
@@ -99,3 +99,6 @@ import cvat.apps.dataset_manager.formats.widerface
 import cvat.apps.dataset_manager.formats.vggface2
 import cvat.apps.dataset_manager.formats.market1501
 import cvat.apps.dataset_manager.formats.icdar
+import cvat.apps.dataset_manager.formats.velodynepoint
+import cvat.apps.dataset_manager.formats.pointcloud
+
