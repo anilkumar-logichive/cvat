@@ -5,8 +5,7 @@
 import React from 'react';
 import Layout from 'antd/lib/layout';
 import { ActiveControl } from 'reducers/interfaces';
-import { Canvas3d } from 'cvat-canvas3d-wrapper';
-import { Canvas } from 'cvat-canvas-wrapper';
+import { Canvas3d as Canvas } from 'cvat-canvas3d-wrapper';
 import MoveControl, {
     Props as MoveControlProps,
 } from 'components/annotation-page/standard-workspace/controls-side-bar/move-control';
@@ -16,26 +15,30 @@ import CursorControl, {
 import DrawCuboidControl, {
     Props as DrawCuboidControlProps,
 } from 'components/annotation-page/standard-workspace/controls-side-bar/draw-cuboid-control';
+import GroupControl, {
+    Props as GroupControlProps,
+} from 'components/annotation-page/standard-workspace/controls-side-bar/group-control';
 import GlobalHotKeys, { KeyMap } from 'utils/mousetrap-react';
 import ControlVisibilityObserver from 'components/annotation-page/standard-workspace/controls-side-bar/control-visibility-observer';
-import PhotoContextControl from './photo-context';
 
 interface Props {
     keyMap: KeyMap;
-    canvasInstance: Canvas | Canvas3d;
+    canvasInstance: Canvas;
     activeControl: ActiveControl;
     normalizedKeyMap: Record<string, string>;
-    contextImageHide: boolean;
-    hideShowContextImage: (hidden: boolean) => void;
     labels: any[];
+    jobInstance: any;
     repeatDrawShape(): void;
     redrawShape(): void;
     pasteShape(): void;
+    groupObjects(enabled: boolean): void;
+    resetGroup(): void;
 }
 
 const ObservedCursorControl = ControlVisibilityObserver<CursorControlProps>(CursorControl);
 const ObservedMoveControl = ControlVisibilityObserver<MoveControlProps>(MoveControl);
 const ObservedDrawCuboidControl = ControlVisibilityObserver<DrawCuboidControlProps>(DrawCuboidControl);
+const ObservedGroupControl = ControlVisibilityObserver<GroupControlProps>(GroupControl);
 
 export default function ControlsSideBarComponent(props: Props): JSX.Element {
     const {
@@ -43,12 +46,13 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
         pasteShape,
         activeControl,
         normalizedKeyMap,
-        contextImageHide,
-        hideShowContextImage,
         keyMap,
         labels,
         redrawShape,
         repeatDrawShape,
+        groupObjects,
+        resetGroup,
+        jobInstance,
     } = props;
 
     const preventDefault = (event: KeyboardEvent | undefined): void => {
@@ -93,11 +97,32 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
                     canvasInstance.draw({ enabled: false });
                 }
             },
+            SWITCH_GROUP_MODE: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                const grouping = activeControl === ActiveControl.GROUP;
+                if (!grouping) {
+                    canvasInstance.cancel();
+                }
+                canvasInstance.group({ enabled: !grouping });
+                groupObjects(!grouping);
+            },
+            RESET_GROUP: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                const grouping = activeControl === ActiveControl.GROUP;
+                if (!grouping) {
+                    return;
+                }
+                resetGroup();
+                canvasInstance.group({ enabled: false });
+                groupObjects(false);
+            },
         };
         subKeyMap = {
             ...subKeyMap,
             PASTE_SHAPE: keyMap.PASTE_SHAPE,
             SWITCH_DRAW_MODE: keyMap.SWITCH_DRAW_MODE,
+            SWITCH_GROUP_MODE: keyMap.SWITCH_GROUP_MODE,
+            RESET_GROUP: keyMap.RESET_GROUP,
         };
     }
 
@@ -115,11 +140,14 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
                 isDrawing={activeControl === ActiveControl.DRAW_CUBOID}
                 disabled={!labels.length}
             />
-            <PhotoContextControl
+            <ObservedGroupControl
+                switchGroupShortcut={normalizedKeyMap.SWITCH_GROUP_MODE}
+                resetGroupShortcut={normalizedKeyMap.RESET_GROUP}
                 canvasInstance={canvasInstance}
                 activeControl={activeControl}
-                contextImageHide={contextImageHide}
-                hideShowContextImage={hideShowContextImage}
+                groupObjects={groupObjects}
+                disabled={!labels.length}
+                jobInstance={jobInstance}
             />
         </Layout.Sider>
     );
