@@ -623,7 +623,8 @@ class CvatTaskDataExtractor(datumaro.SourceExtractor):
                 a_value = cvat_attrs.get(a_name, a_desc['default_value'])
                 try:
                     if a_desc['input_type'] == AttributeType.NUMBER:
-                        a_value = float(a_value)
+                        if self._dimension == DimensionType.DIM_2D:
+                            a_value = float(a_value)
                     elif a_desc['input_type'] == AttributeType.CHECKBOX:
                         a_value = (a_value.lower() == 'true')
                     dm_attr[a_name] = a_value

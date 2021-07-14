@@ -204,7 +204,7 @@ class _DbTestBase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         return response
 
-    def _check_dump_content(self, content, task_data, format_name):
+    def _check_dump_content(self, content, task_data, format_name, related_files=True):
         def etree_to_dict(t):
             d = {t.tag: {} if t.attrib else None}
             children = list(t)
@@ -240,9 +240,14 @@ class _DbTestBase(APITestCase):
             with tempfile.TemporaryDirectory() as tmp_dir:
                 checking_files = [osp.join(tmp_dir, "key_id_map.json"),
                                   osp.join(tmp_dir, "meta.json"),
-                                  osp.join(tmp_dir, "ds0", "ann", "000001.pcd.json"),
-                                  osp.join(tmp_dir, "ds0", "ann", "000002.pcd.json"),
-                                  osp.join(tmp_dir, "ds0", "ann","000003.pcd.json")]
+                                  osp.join(tmp_dir, "ds0", "ann", "000001.pcd.pcd.json"),
+                                  osp.join(tmp_dir, "ds0", "ann", "000002.pcd.pcd.json"),
+                                  osp.join(tmp_dir, "ds0", "ann","000003.pcd.pcd.json")
+                                  ]
+                if related_files:
+                    checking_files.extend([osp.join(tmp_dir, "ds0", "related_images", "000001.pcd_pcd", "000001.png.json"),
+                                  osp.join(tmp_dir, "ds0", "related_images", "000002.pcd_pcd", "000002.png.json"),
+                                  osp.join(tmp_dir, "ds0", "related_images", "000003.pcd_pcd", "000003.png.json")])
                 zipfile.ZipFile(content).extractall(tmp_dir)
                 jsons = glob(osp.join(tmp_dir, '**', '*.json'), recursive=True)
                 self.assertTrue(jsons)
@@ -548,7 +553,7 @@ class Task3DTest(_DbTestBase):
                             content = io.BytesIO(b"".join(response.streaming_content))
                             with open(file_name, "wb") as f:
                                 f.write(content.getvalue())
-                            self._check_dump_content(content, task_ann_prev.data, format_name)
+                            self._check_dump_content(content, task_ann_prev.data, format_name, related_files=False)
                         self.assertEqual(osp.exists(file_name), edata['file_exists'])
 
                 self._remove_annotations(task_id)
