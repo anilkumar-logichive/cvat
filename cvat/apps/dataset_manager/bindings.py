@@ -555,8 +555,8 @@ class CvatTaskDataExtractor(datumaro.SourceExtractor):
                         attributes["labels"].append({"label_id": index, "name": label["name"], "color": label["color"]})
                         attributes["track_id"] = -1
                         index += 1
-
-                dm_item = datumaro.DatasetItem(id=osp.split(frame_data.name)[-1], image=None,
+                file_name = osp.split(frame_data.name)[-1].split(".")[0]
+                dm_item = datumaro.DatasetItem(id=file_name, image=None,
                                                annotations=dm_anno, point_cloud=dm_image[0], related_images=dm_image[1],
                                                attributes=attributes)
 

@@ -240,9 +240,9 @@ class _DbTestBase(APITestCase):
             with tempfile.TemporaryDirectory() as tmp_dir:
                 checking_files = [osp.join(tmp_dir, "key_id_map.json"),
                                   osp.join(tmp_dir, "meta.json"),
-                                  osp.join(tmp_dir, "ds0", "ann", "000001.pcd.pcd.json"),
-                                  osp.join(tmp_dir, "ds0", "ann", "000002.pcd.pcd.json"),
-                                  osp.join(tmp_dir, "ds0", "ann","000003.pcd.pcd.json")
+                                  osp.join(tmp_dir, "ds0", "ann", "000001.pcd.json"),
+                                  osp.join(tmp_dir, "ds0", "ann", "000002.pcd.json"),
+                                  osp.join(tmp_dir, "ds0", "ann","000003.pcd.json")
                                   ]
                 if related_files:
                     checking_files.extend([osp.join(tmp_dir, "ds0", "related_images", "000001.pcd_pcd", "000001.png.json"),
@@ -747,5 +747,5 @@ class Task3DTest(_DbTestBase):
                             with open(file_name, "wb") as f:
                                 f.write(content.getvalue())
                         self.assertEqual(osp.exists(file_name), edata['file_exists'])
-                        self._check_dump_content(content, task_ann_prev.data, format_name)
+                        self._check_dump_content(content, task_ann_prev.data, format_name, related_files=False)
 
